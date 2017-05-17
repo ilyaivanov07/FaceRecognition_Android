@@ -44,6 +44,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static android.hardware.camera2.CameraDevice.TEMPLATE_PREVIEW;
+
 
 /*
 
@@ -73,6 +75,7 @@ to increase the ImageReader constructor's maxImages argument.
 
 public class MainActivity extends AppCompatActivity {
 
+    private int frameCounter = 0;
     private TextureView textureView;
     private String cameraId;
     private static final int REQUEST_CAMERA_PERMISSION = 200;
@@ -144,15 +147,23 @@ public class MainActivity extends AppCompatActivity {
             outputSurfaces.add(new Surface(textureView.getSurfaceTexture()));
 
 
-            final CaptureRequest.Builder captureBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
+//            final CaptureRequest.Builder captureBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
+            final CaptureRequest.Builder captureBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+
             captureBuilder.addTarget(reader.getSurface());
             captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
 
             // Orientation
             int rotation = getWindowManager().getDefaultDisplay().getRotation();
             captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(rotation));
-            final File file = new File(Environment.getExternalStorageDirectory() + "/pic.jpg");
+            Log.e(TAG, "pic " + Integer.toString(this.frameCounter));
+            final File file = new File(Environment.getExternalStorageDirectory() + "/pic" + Integer.toString(this.frameCounter) + ".jpg");
 
+            this.frameCounter++;
+
+            if (this.frameCounter >= 5) {
+                android.os.Process.killProcess(android.os.Process.myPid());
+            }
 
             ImageReader.OnImageAvailableListener readerListener = new ImageReader.OnImageAvailableListener() {
                 @Override
@@ -307,7 +318,7 @@ public class MainActivity extends AppCompatActivity {
             assert texture != null;
             texture.setDefaultBufferSize(imageDimension.getWidth(), imageDimension.getHeight());
             Surface surface = new Surface(texture);
-            captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+            captureRequestBuilder = cameraDevice.createCaptureRequest(TEMPLATE_PREVIEW);
             captureRequestBuilder.addTarget(surface);
             cameraDevice.createCaptureSession(Arrays.asList(surface), new CameraCaptureSession.StateCallback(){
                 @Override
