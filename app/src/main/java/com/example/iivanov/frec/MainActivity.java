@@ -3,6 +3,7 @@ package com.example.iivanov.frec;
 // https://inducesmile.com/android/android-camera2-api-example-tutorial/
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.ImageFormat;
@@ -27,6 +28,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.Size;
+import android.util.SparseArray;
 import android.util.SparseIntArray;
 import android.view.Surface;
 import android.view.TextureView;
@@ -138,8 +140,8 @@ public class MainActivity extends AppCompatActivity {
 
 
             // Create the reader for the preview frames.
-//            ImageReader reader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 1);
-            ImageReader reader = ImageReader.newInstance(width, height, ImageFormat.YUV_420_888, 2);
+            ImageReader reader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 1);
+            //ImageReader reader = ImageReader.newInstance(width, height, ImageFormat.YUV_420_888, 2);
 
 
             List<Surface> outputSurfaces = new ArrayList<Surface>(2);
@@ -147,8 +149,8 @@ public class MainActivity extends AppCompatActivity {
             outputSurfaces.add(new Surface(textureView.getSurfaceTexture()));
 
 
-//            final CaptureRequest.Builder captureBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
-            final CaptureRequest.Builder captureBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+            final CaptureRequest.Builder captureBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
+//            final CaptureRequest.Builder captureBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
 
             captureBuilder.addTarget(reader.getSurface());
             captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
@@ -216,11 +218,11 @@ public class MainActivity extends AppCompatActivity {
                     try {
                         // Submit a request for an image to be captured by the camera device.
                         // capture(CaptureRequest request, CameraCaptureSession.CaptureCallback listener, Handler handler)
-                        //cameraCaptureSession.capture(captureBuilder.build(), captureListener, mBackgroundHandler);
+                        cameraCaptureSession.capture(captureBuilder.build(), captureListener, mBackgroundHandler);
 
                         // setRepeatingRequest(CaptureRequest request, CameraCaptureSession.CaptureCallback listener, Handler handler)
                         // Request endlessly repeating capture of images by this capture session.
-                        cameraCaptureSession.setRepeatingRequest(captureBuilder.build(), captureListener, mBackgroundHandler);
+                        //cameraCaptureSession.setRepeatingRequest(captureBuilder.build(), captureListener, mBackgroundHandler);
 
                     } catch (CameraAccessException e) {
                         e.printStackTrace();
@@ -242,10 +244,11 @@ public class MainActivity extends AppCompatActivity {
         CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         Log.e(TAG, "is camera open");
         try {
-            cameraId = manager.getCameraIdList()[0];
+            // get front facing camera
+            this.setUpCameraOutputs(0, 0);
+
             CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraId);
             StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
-            assert map != null;
             imageDimension = map.getOutputSizes(SurfaceTexture.class)[0];
             // Add permission for camera and let user grant the permission
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -258,6 +261,60 @@ public class MainActivity extends AppCompatActivity {
         }
         Log.e(TAG, "openCamera X");
     }
+
+    @SuppressLint("LongLogTag")
+    private void setUpCameraOutputs(final int width, final int height) {
+        final CameraManager manager = (CameraManager) this.getSystemService(Context.CAMERA_SERVICE);
+        try {
+            SparseArray<Integer> cameraFaceTypeMap = new SparseArray<>();
+
+            // Check the facing types of camera devices
+            for (final String cameraId : manager.getCameraIdList()) {
+                final CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraId);
+                final Integer facing = characteristics.get(CameraCharacteristics.LENS_FACING);
+                if (facing != null && facing == CameraCharacteristics.LENS_FACING_FRONT) {
+                    if (cameraFaceTypeMap.get(CameraCharacteristics.LENS_FACING_FRONT) != null) {
+                        cameraFaceTypeMap.append(CameraCharacteristics.LENS_FACING_FRONT, cameraFaceTypeMap.get(CameraCharacteristics.LENS_FACING_FRONT) + 1);
+                    } else {
+                        cameraFaceTypeMap.append(CameraCharacteristics.LENS_FACING_FRONT, 1);
+                    }
+                }
+                if (facing != null && facing == CameraCharacteristics.LENS_FACING_BACK) {
+                    if (cameraFaceTypeMap.get(CameraCharacteristics.LENS_FACING_FRONT) != null) {
+                        cameraFaceTypeMap.append(CameraCharacteristics.LENS_FACING_BACK, cameraFaceTypeMap.get(CameraCharacteristics.LENS_FACING_BACK) + 1);
+                    } else {
+                        cameraFaceTypeMap.append(CameraCharacteristics.LENS_FACING_BACK, 1);
+                    }
+                }
+            }
+
+            Integer num_facing_back_camera = cameraFaceTypeMap.get(CameraCharacteristics.LENS_FACING_BACK);
+            Integer num_facing_front_camera = cameraFaceTypeMap.get(CameraCharacteristics.LENS_FACING_FRONT);
+
+            for (final String cameraId : manager.getCameraIdList()) {
+
+                final CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraId);
+                final Integer facing = characteristics.get(CameraCharacteristics.LENS_FACING);
+
+                // Ilya: If front facing camera exists, we won't use back facing camera
+                if (num_facing_front_camera != null && num_facing_front_camera > 0) {
+                    // We don't use a back facing camera
+                    if (facing != null && facing == CameraCharacteristics.LENS_FACING_BACK) {
+                        continue;
+                    }
+                }
+
+                this.cameraId = cameraId;
+                return;
+            }
+        } catch (final CameraAccessException e) {
+            //Timber.tag(TAG).e("Exception!", e);
+        } catch (final NullPointerException e) {
+            // Currently an NPE is thrown when the Camera2API is used but not supported on the device this code runs.
+            //ErrorDialog.newInstance(getString(R.string.camera_error)).show(getChildFragmentManager(), FRAGMENT_DIALOG);
+        }
+    }
+
 
 
     private final CameraDevice.StateCallback stateCallback = new CameraDevice.StateCallback() {
