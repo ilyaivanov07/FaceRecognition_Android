@@ -117,8 +117,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-
-
     protected void takePicture() {
         if(null == cameraDevice) {
             Log.e(TAG, "cameraDevice is null");
@@ -138,16 +136,13 @@ public class MainActivity extends AppCompatActivity {
                 height = jpegSizes[0].getHeight();
             }
 
-
             // Create the reader for the preview frames.
             ImageReader reader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 1);
             //ImageReader reader = ImageReader.newInstance(width, height, ImageFormat.YUV_420_888, 2);
 
-
             List<Surface> outputSurfaces = new ArrayList<Surface>(2);
             outputSurfaces.add(reader.getSurface());
             outputSurfaces.add(new Surface(textureView.getSurfaceTexture()));
-
 
             final CaptureRequest.Builder captureBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
 //            final CaptureRequest.Builder captureBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
@@ -229,8 +224,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 @Override
-                public void onConfigureFailed(CameraCaptureSession session) {
-                }
+                public void onConfigureFailed(CameraCaptureSession session) { }
             }, mBackgroundHandler);
 
 
@@ -309,9 +303,6 @@ public class MainActivity extends AppCompatActivity {
             }
         } catch (final CameraAccessException e) {
             //Timber.tag(TAG).e("Exception!", e);
-        } catch (final NullPointerException e) {
-            // Currently an NPE is thrown when the Camera2API is used but not supported on the device this code runs.
-            //ErrorDialog.newInstance(getString(R.string.camera_error)).show(getChildFragmentManager(), FRAGMENT_DIALOG);
         }
     }
 
