@@ -1,10 +1,7 @@
 package com.tzutalin.dlib;
 
 import android.graphics.Bitmap;
-import android.support.annotation.Keep;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.annotation.WorkerThread;
+import android.support.annotation.*;
 import android.util.Log;
 
 import java.util.Arrays;
@@ -44,14 +41,14 @@ public class FaceDet {
 
     @Nullable
     @WorkerThread
-    public List<VisionDetRet> detect(@NonNull String path) {
+    public List<VisionDetRet> detect(String path) {
         VisionDetRet[] detRets = jniDetect(path);
         return Arrays.asList(detRets);
     }
 
     @Nullable
     @WorkerThread
-    public List<VisionDetRet> detect(@NonNull Bitmap bitmap) {
+    public List<VisionDetRet> detect(Bitmap bitmap) {
         VisionDetRet[] detRets = jniBitmapDetect(bitmap);
         return Arrays.asList(detRets);
     }

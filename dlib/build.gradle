@@ -1,19 +1,18 @@
 apply plugin: 'com.android.library'
 
 // required by POM
-version = "${rootProject.ext.releaseVersionName}"
+version = "1.0"
 group = "com.tzutalin.dlib-android-app"
 
 android {
     compileSdkVersion 23
-    buildToolsVersion '23.0.3'
-    buildToolsVersion '25.0.0'
+    buildToolsVersion '25.0.3'
 
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 23
         versionCode 1
-        versionName "${rootProject.ext.releaseVersionName}"
+        versionName "1.0"
     }
 
     buildTypes {
@@ -43,11 +42,10 @@ configurations {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile "com.android.support:appcompat-v7:${rootProject.ext.androidSupportSdkVersion}"
-    javadocDeps "com.android.support:appcompat-v7:${rootProject.ext.androidSupportSdkVersion}"
-    compile "com.android.support:support-annotations:${rootProject.ext.androidSupportSdkVersion}"
-    javadocDeps "com.android.support:support-annotations:${rootProject.ext.androidSupportSdkVersion}"
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile "com.android.support:support-annotations:23.3.0"
+    javadocDeps "com.android.support:support-annotations:23.3.0"
+
 }
 
 buildscript {
@@ -57,6 +55,7 @@ buildscript {
 
     dependencies {
         classpath 'com.jakewharton.hugo:hugo-plugin:1.2.1'
+
     }
 }
 apply plugin: 'com.jakewharton.hugo'
@@ -184,10 +183,10 @@ if(project.rootProject.file('local.properties').isFile()) {
             repo = "maven"
             name = "dlib-android-app"
             version {
-                name = "${rootProject.ext.releaseVersionName}"
+                name = "1.0"
                 desc = 'An Android library to wrap dlib library'
                 released  = new Date()
-                vcsTag = "${rootProject.ext.releaseVersionName}"
+                vcsTag = "1.0"
             }
 
             websiteUrl = siteUrl
