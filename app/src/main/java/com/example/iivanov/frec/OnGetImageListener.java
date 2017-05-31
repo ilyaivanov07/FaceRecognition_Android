@@ -24,13 +24,7 @@ import android.os.Trace;
 import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
-
-import com.tzutalin.dlib.Constants;
-import com.tzutalin.dlib.FaceDet;
-import com.tzutalin.dlib.VisionDetRet;
-
 import junit.framework.Assert;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -79,14 +73,11 @@ public class OnGetImageListener implements OnImageAvailableListener {
             if (mFaceDet != null) {
                 mFaceDet.release();
             }
-
-//            if (mWindow != null) {
-//                mWindow.release();
-//            }
         }
     }
 
     private void drawResizedBitmap(final Bitmap src, final Bitmap dst) {
+        Log.d(TAG, "------------------------------drawResizeBitmap()");
 
         Display getOrient = ((WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
         int orientation = Configuration.ORIENTATION_UNDEFINED;
@@ -130,6 +121,8 @@ public class OnGetImageListener implements OnImageAvailableListener {
 
     @Override
     public void onImageAvailable(final ImageReader reader) {
+        Log.d(TAG, "------------------------------onImageAvailable()");
+
         Image image = null;
         try {
             image = reader.acquireLatestImage();

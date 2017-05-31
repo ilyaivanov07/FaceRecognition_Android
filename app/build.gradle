@@ -17,11 +17,20 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    // Use prebilt *.so. Don't run ndk-build
+    sourceSets {
+        main {
+            //jniLibs.srcDirs = ["src/main/jniLibs"]
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+
+
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile project(':dlib')
+    compile fileTree(dir: 'libs', include: ['.jar','.so'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
